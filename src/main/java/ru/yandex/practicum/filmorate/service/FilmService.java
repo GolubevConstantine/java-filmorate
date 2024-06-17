@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 import java.util.Set;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
     public List<Film> findAll() {
         return filmStorage.findAll();
@@ -33,7 +36,9 @@ public class FilmService {
     }
 
     public void addLike(int id, int userId) {
-        findFilmById(id).getLikes().add(userId);
+        User user = userStorage.findUserById(userId).orElseThrow(() -> new FilmNotFoundException("Пользователь не найден."));
+
+        findFilmById(id).getLikes().add(user.getId());
     }
 
     public void removeLike(int id, int userId) {
@@ -45,9 +50,6 @@ public class FilmService {
     }
 
     public List<Film> findPopular(int count) {
-        return filmStorage.findAll().stream()
-                .sorted((o1, o2) -> Integer.compare(o2.getLikes().size(), o1.getLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.findAll().stream().sorted((o1, o2) -> Integer.compare(o2.getLikes().size(), o1.getLikes().size())).limit(count).collect(Collectors.toList());
     }
 }
