@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -29,29 +30,27 @@ public class UserService {
         return userStorage.update(user);
     }
 
-    public User findUserById(int id) {
+    public User findUserByIdService(int id) {
         return userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
     }
 
-    public void addFriend(int id, int friendId) {
+    public void addFriend(Integer id, Integer friendId) {
         if (id < 0 || friendId < 0) {
             throw new UserNotFoundException("Пользователь не найден.");
         }
-        findUserById(id).getFriends().add(friendId);
-        findUserById(friendId).getFriends().add(id);
+        userStorage.findUserById(id).getFriends().add(friendId);
+        userStorage.findUserById(friendId).getFriends().add(id);
     }
 
-    public List<User> findAllFriends(int id) {
+    public List<User> findAllFriends(Integer id) {
         List<User> friendsList = new ArrayList<>();
-        Set<Integer> friends = findUserById(id).getFriends();
-        if (friends == null) {
+        Set<Integer> friends = userStorage.findUserById(id).getFriends();
+        if (friends.isEmpty()) {
             return friendsList;
         }
-        for (Integer friendId : friends) {
-            User friend = findUserById(friendId);
-            friendsList.add(friend);
-        }
-        return friendsList;
+        return friends.stream()
+                .map(userStorage::findUserById)
+                .collect(Collectors.toList());
     }
 
     public List<User> findCommonFriends(int id, int otherId) {
@@ -61,9 +60,9 @@ public class UserService {
         return commonFriends;
     }
 
-    public void removeFriend(int id, int friendId) {
-        findUserById(id).getFriends().remove(friendId);
-        findUserById(friendId).getFriends().remove(id);
+    public void removeFriend(Integer id, Integer friendId) {
+        userStorage.findUserById(id).getFriends().remove(friendId);
+        userStorage.findUserById(friendId).getFriends().remove(id);
     }
 
     private void validate(User user) {
