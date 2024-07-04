@@ -4,17 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
 public class UserService {
     private final UserStorage userStorage;
+    private final FriendStorage friendStorage;
 
     public List<User> findAll() {
         return userStorage.findAll();
@@ -27,42 +26,43 @@ public class UserService {
 
     public User update(User user) {
         validate(user);
+        if (userStorage.findUserById(user.getId()).isEmpty()) {
+            throw new UserNotFoundException("Пользователь не найден.");
+        }
         return userStorage.update(user);
     }
 
-    public User findUserByIdService(int id) {
+    public User findUserById(int id) {
         return userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
     }
 
-    public void addFriend(Integer id, Integer friendId) {
+    public void addFriend(int id, int friendId) {
+        if (userStorage.findUserById(id).isEmpty() || userStorage.findUserById(friendId).isEmpty()) {
+            throw new UserNotFoundException("Пользователь не найден.");
+        }
         if (id < 0 || friendId < 0) {
             throw new UserNotFoundException("Пользователь не найден.");
         }
-        userStorage.findUserById(id).getFriends().add(friendId);
-        userStorage.findUserById(friendId).getFriends().add(id);
+        friendStorage.addFriend(id, friendId);
     }
 
-    public List<User> findAllFriends(Integer id) {
-        List<User> friendsList = new ArrayList<>();
-        Set<Integer> friends = userStorage.findUserById(id).getFriends();
+    public List<User> findAllFriends(int id) {
+        List<User> friends = friendStorage.findAllFriends(id);
         if (friends.isEmpty()) {
-            return friendsList;
+            throw new UserNotFoundException("Пользователь не найден");
         }
-        return friends.stream()
-                .map(userStorage::findUserById)
-                .collect(Collectors.toList());
+        return friends;
     }
 
     public List<User> findCommonFriends(int id, int otherId) {
-        List<User> commonFriends = findAllFriends(id);
-        List<User> commonFriendsSecond = findAllFriends(otherId);
-        commonFriends.retainAll(commonFriendsSecond);
-        return commonFriends;
+        return friendStorage.findCommonFriends(id, otherId);
     }
 
-    public void removeFriend(Integer id, Integer friendId) {
-        userStorage.findUserById(id).getFriends().remove(friendId);
-        userStorage.findUserById(friendId).getFriends().remove(id);
+    public void removeFriend(int id, int friendId) {
+        if (userStorage.findUserById(id).isEmpty() || userStorage.findUserById(friendId).isEmpty()) {
+            throw new UserNotFoundException("Пользователь не найден.");
+        }
+        friendStorage.removeFriend(id, friendId);
     }
 
     private void validate(User user) {

@@ -19,11 +19,6 @@ import java.util.List;
 public class FilmController {
     private final FilmService filmService;
 
-    @GetMapping
-    public List<Film> findAll() {
-        log.info("GET / films");
-        return filmService.findAll();
-    }
 
     @GetMapping("/{id}")
     public Film findFilmById(@PathVariable("id") int id) {
