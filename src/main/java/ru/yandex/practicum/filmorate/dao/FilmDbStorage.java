@@ -16,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -43,7 +44,7 @@ public class FilmDbStorage implements FilmStorage {
                     ps.setInt(5, film.getMpa().getId());
                     return ps;
                 }, keyHolder);
-        film.setId(keyHolder.getKey().intValue());
+        film.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
         updateGenres(film.getGenres(), film.getId());
         return film;
     }
@@ -82,7 +83,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private Film makeFilm(ResultSet rs) throws SQLException {
         Integer id = rs.getInt("film_id");
-        Film film = Film.builder()
+        return Film.builder()
                 .id(id)
                 .name(rs.getString("name"))
                 .description(rs.getString("description"))
@@ -90,14 +91,13 @@ public class FilmDbStorage implements FilmStorage {
                 .duration(rs.getInt("duration"))
                 .mpa(new Mpa(rs.getInt("rating_id"), rs.getString("mpa_name")))
                 .build();
-        return film;
     }
 
     private void updateGenres(Set<Genre> genres, int id) {
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", id);
         if (genres != null && !genres.isEmpty()) {
             String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
-            Genre[] g = genres.toArray(new Genre[genres.size()]);
+            Genre[] g = genres.toArray(new Genre[0]);
             jdbcTemplate.batchUpdate(
                     sql,
                     new BatchPreparedStatementSetter() {

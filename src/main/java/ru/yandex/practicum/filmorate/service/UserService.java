@@ -50,8 +50,7 @@ public class UserService {
         if (userStorage.findUserById(id).isEmpty()) {
             throw new UserNotFoundException("Пользователь не найден.");
         }
-        List<User> friends = friendStorage.findAllFriends(id);
-        return friends;
+        return friendStorage.findAllFriends(id);
     }
 
     public List<User> findCommonFriends(int id, int otherId) {

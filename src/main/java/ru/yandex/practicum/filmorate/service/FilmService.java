@@ -1,21 +1,16 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.*;
 
-import javax.validation.ConstraintViolationException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -28,9 +23,7 @@ public class FilmService {
     private final UserStorage userStorage;
 
     public List<Film> findAllFilms() {
-        List<Film> films = filmStorage.findAllFilms();
-        //genreStorage.findAllGenresByFilm(films);
-        return films;
+        return filmStorage.findAllFilms();
     }
 
     public Film create(Film film) {
@@ -39,7 +32,7 @@ public class FilmService {
             throw new ValidationException("Mpa not found");
         }
 
-        if (film.getGenres() != null){
+        if (film.getGenres() != null) {
             Optional<Genre> genres = genreStorage.findGenreByIds(film.getGenres().stream().map(Genre::getId).collect(Collectors.toList()));
             if (genres.isEmpty()) {
                 throw new ValidationException("Genres not found");
@@ -71,23 +64,21 @@ public class FilmService {
     }
 
     public void addLike(int id, int userId) {
-        User user = userStorage.findUserById(userId).orElseThrow(() -> new FilmNotFoundException("Пользователь не найден."));
-        Film film = filmStorage.findFilmById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден."));
+        userStorage.findUserById(userId).orElseThrow(() -> new FilmNotFoundException("Пользователь не найден."));
+        filmStorage.findFilmById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден."));
 
         likeStorage.addLike(id, userId);
     }
 
     public void removeLike(int id, int userId) {
-        User user = userStorage.findUserById(userId).orElseThrow(() -> new FilmNotFoundException("Пользователь не найден."));
-        Film film = filmStorage.findFilmById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден."));
+        userStorage.findUserById(userId).orElseThrow(() -> new FilmNotFoundException("Пользователь не найден."));
+        filmStorage.findFilmById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден."));
 
         likeStorage.removeLike(id, userId);
     }
 
     public List<Film> findPopular(int count) {
-        List<Film> films = filmStorage.findPopular(count);
-        //genreStorage.findAllGenresByFilm(films);
-        return films;
+        return filmStorage.findPopular(count);
     }
 
     public List<Mpa> findAllMpa() {
