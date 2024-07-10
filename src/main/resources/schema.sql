@@ -21,6 +21,7 @@ create table if not exists friendship(
 PRIMARY KEY(user_id, friend_id),
 user_id int,
 friend_id int,
+accepted boolean,
 FOREIGN KEY(user_id) REFERENCES users(user_id),
 FOREIGN KEY(friend_id) REFERENCES users(user_id)
 );

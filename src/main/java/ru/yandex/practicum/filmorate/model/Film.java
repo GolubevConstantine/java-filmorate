@@ -28,7 +28,7 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть больше 0.")
     private Integer duration;
     private final Set<Integer> likes = new HashSet<>();
-    @javax.validation.constraints.NotNull
+    @NotNull
     private Mpa mpa;
-    private final LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+    private LinkedHashSet<Genre> genres;
 }

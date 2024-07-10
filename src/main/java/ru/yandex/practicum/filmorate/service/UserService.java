@@ -47,10 +47,10 @@ public class UserService {
     }
 
     public List<User> findAllFriends(int id) {
-        List<User> friends = friendStorage.findAllFriends(id);
-        if (friends.isEmpty()) {
-            throw new UserNotFoundException("Пользователь не найден");
+        if (userStorage.findUserById(id).isEmpty()) {
+            throw new UserNotFoundException("Пользователь не найден.");
         }
+        List<User> friends = friendStorage.findAllFriends(id);
         return friends;
     }
 

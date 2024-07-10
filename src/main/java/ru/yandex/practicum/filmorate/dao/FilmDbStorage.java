@@ -95,7 +95,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private void updateGenres(Set<Genre> genres, int id) {
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", id);
-        if (genres.size() > 0) {
+        if (genres != null && !genres.isEmpty()) {
             String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
             Genre[] g = genres.toArray(new Genre[genres.size()]);
             jdbcTemplate.batchUpdate(
