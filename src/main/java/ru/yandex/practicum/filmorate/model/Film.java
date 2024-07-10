@@ -28,7 +28,6 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть больше 0.")
     private Integer duration;
     private final Set<Integer> likes = new HashSet<>();
-    @NotNull
     private Mpa mpa;
     private LinkedHashSet<Genre> genres;
 }
