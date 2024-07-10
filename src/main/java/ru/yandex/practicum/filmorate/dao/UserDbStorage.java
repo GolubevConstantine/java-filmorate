@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -33,7 +34,7 @@ public class UserDbStorage implements UserStorage {
                     ps.setDate(4, Date.valueOf(user.getBirthday()));
                     return ps;
                 }, keyHolder);
-        user.setId(keyHolder.getKey().intValue());
+        user.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
         return user;
     }
 
