@@ -10,7 +10,5 @@ public interface GenreStorage {
 
     Optional<Genre> findGenreById(int id);
 
-    Optional<Genre> findGenreByIds(List<Integer> ids);
-
     List<Genre> findAllGenresByFilmID(int id);
 }

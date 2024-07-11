@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.storage.*;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -33,10 +32,7 @@ public class FilmService {
         }
 
         if (film.getGenres() != null) {
-            Optional<Genre> genres = genreStorage.findGenreByIds(film.getGenres().stream().map(Genre::getId).collect(Collectors.toList()));
-            if (genres.isEmpty()) {
-                throw new ValidationException("Genres not found");
-            }
+            film.getGenres().forEach(genre -> genreStorage.findGenreById(genre.getId()).orElseThrow(() -> new ValidationException("Жанр " + genre.getId() + " не найден.")));
         }
 
         return filmStorage.create(film);
@@ -58,7 +54,6 @@ public class FilmService {
         genresSet.addAll(genres);
 
         film.setGenres(genresSet);
-
 
         return film;
     }

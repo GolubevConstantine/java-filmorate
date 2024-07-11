@@ -28,13 +28,6 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public Optional<Genre> findGenreByIds(List<Integer> ids) {
-        String sql = "SELECT * FROM genres where genre_id IN (%s)";
-        String inSql = String.join(",", Collections.nCopies(ids.size(), "?"));
-        return jdbcTemplate.query(String.format(sql, inSql), (rs, rowNum) -> makeGenre(rs), ids.toArray()).stream().findFirst();
-    }
-
-    @Override
     public List<Genre> findAllGenresByFilmID(int id) {
         String sql = "SELECT * from FILM_GENRES as fg INNER JOIN GENRES AS genres ON fg.GENRE_ID = genres.GENRE_ID WHERE fg.FILM_ID = ?";
         return new ArrayList<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(rs), id));
