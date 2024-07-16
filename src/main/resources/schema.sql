@@ -34,7 +34,7 @@ create table if not exists mpa_rating
     name      varchar(255)
 );
 
-create table PUBLIC.DIRECTORS
+create table if not exists PUBLIC.DIRECTORS
 (
     DIRECTOR_ID INTEGER auto_increment
         primary key,
@@ -52,7 +52,7 @@ create table if not exists films
     rating_id   int
 );
 
-create table PUBLIC.FILM_DIRECTORS
+create table if not exists PUBLIC.FILM_DIRECTORS
 (
     ID          INTEGER auto_increment,
     FILM_ID     INTEGER
