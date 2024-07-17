@@ -15,10 +15,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Repository
@@ -70,6 +67,18 @@ public class FilmDbStorage implements FilmStorage {
     public Optional<Film> findFilmById(int id) {
         String sql = "WHERE f.film_id = ?";
         return jdbcTemplate.query(SELECT_FILMS + sql, (rs, rowNum) -> makeFilm(rs), id).stream().findFirst();
+    }
+
+    @Override
+    public void deleteFilmById(int id) {
+        String sqlFilmDirector = "DELETE FROM FILM_DIRECTORS WHERE film_id = ? ";
+        jdbcTemplate.update(sqlFilmDirector, id);
+        String sqlFilmGenres = "DELETE FROM FILM_GENRES WHERE film_id = ? ";
+        jdbcTemplate.update(sqlFilmGenres, id);
+        String sqlFilmLikes = "DELETE FROM LIKES WHERE film_id = ? ";
+        jdbcTemplate.update(sqlFilmLikes, id);
+        String sql = "DELETE FROM FILMs WHERE film_id = ? ";
+        jdbcTemplate.update(sql, id);
     }
 
     @Override

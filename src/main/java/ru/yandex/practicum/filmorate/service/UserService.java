@@ -69,4 +69,9 @@ public class UserService {
             user.setName(user.getLogin());
         }
     }
+
+    public void deleteUserById(int id) {
+        userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        userStorage.deleteUserById(id);
+    }
 }
