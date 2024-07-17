@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS films CASCADE;
 DROP TABLE IF EXISTS likes CASCADE;
 DROP TABLE IF EXISTS film_genres CASCADE;
 DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS review_actions CASCADE;
 
 CREATE TABLE IF NOT EXISTS users
 (
@@ -82,3 +83,14 @@ CREATE TABLE IF NOT EXISTS reviews
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS reviews_user_film_idx ON reviews (user_id, film_id);
+
+CREATE TABLE IF NOT EXISTS review_actions
+(
+    review_id int,
+    user_id   int,
+    action    varchar(7),
+    PRIMARY KEY (review_id, user_id),
+    CHECK (action in ('LIKE', 'DISLIKE')),
+    FOREIGN KEY (review_id) REFERENCES reviews (review_id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id)
+);
