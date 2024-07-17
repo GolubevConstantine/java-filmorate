@@ -74,6 +74,16 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilmById(int id) {
+        String sqlFilmGenres = "DELETE FROM FILM_GENRES WHERE film_id = ? ";
+        jdbcTemplate.update(sqlFilmGenres, id);
+        String sqlFilmLikes = "DELETE FROM LIKES WHERE film_id = ? ";
+        jdbcTemplate.update(sqlFilmLikes, id);
+        String sql = "DELETE FROM FILMS WHERE film_id = ? ";
+        jdbcTemplate.update(sql, id);
+    }
+
+    @Override
     public List<Film> findPopular(int count) {
         String sql = "LEFT JOIN likes ON f.film_id = likes.film_id " +
                 "GROUP BY f.film_id " +

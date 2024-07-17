@@ -33,6 +33,12 @@ public class UserController {
         return user;
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable("id") int id) {
+        log.info("Удален пользователь id {}", id);
+        userService.deleteUserById(id);
+    }
+
     @GetMapping
     public List<User> findAll() {
         log.info("GET / users");
