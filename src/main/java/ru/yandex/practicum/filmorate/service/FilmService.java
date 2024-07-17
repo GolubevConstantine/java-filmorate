@@ -76,6 +76,10 @@ public class FilmService {
         return filmStorage.findPopular(count);
     }
 
+    public List<Film> findFilmsByDirectorID(int id, String sortedBy) {
+        return filmStorage.findFilmsByDirectorID(id, sortedBy);
+    }
+
     public List<Mpa> findAllMpa() {
         return mpaStorage.findAllMpa();
     }

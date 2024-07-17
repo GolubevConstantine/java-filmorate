@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -17,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
+@Slf4j
 @RequiredArgsConstructor
 @Repository
 public class FilmDbStorage implements FilmStorage {
@@ -54,6 +57,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
                 film.getMpa().getId(), id);
         updateGenres(film.getGenres(), id);
+        updateDirectors(film.getDirectors(), id);
         return film;
     }
 
@@ -88,6 +92,28 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(SELECT_FILMS + sql, (rs, rowNum) -> makeFilm(rs), count);
     }
 
+    @Override
+    public List<Film> findFilmsByDirectorID(int id, String sortedBy) {
+        String sql = "LEFT JOIN FILM_DIRECTORS fd ON fd.film_id = f.film_id ";
+
+        String sql2 = "";
+        if (!sortedBy.isEmpty()) {
+            if (sortedBy.equals("year")) {
+                sql2 += "GROUP BY f.film_id ";
+                sql2 += "ORDER BY f.releasedate ASC, f.film_id ASC ";
+            } else if (sortedBy.equals("likes")) {
+                sql += "LEFT JOIN likes ON f.film_id = likes.film_id ";
+                sql2 += "GROUP BY f.film_id " +
+                        "ORDER BY COUNT(likes.film_id) DESC, f.film_id ASC ";
+            }
+        }
+        sql += "WHERE fd.director_id = ? ";
+        log.info(SELECT_FILMS + sql + sql2);
+        List<Film> films = jdbcTemplate.query(SELECT_FILMS + sql + sql2, (rs, rowNum) -> makeFilm(rs), id);
+        addDirectorsInFilms(films);
+        return films;
+    }
+
     private Film makeFilm(ResultSet rs) throws SQLException {
         Integer id = rs.getInt("film_id");
         return Film.builder()
@@ -118,6 +144,64 @@ public class FilmDbStorage implements FilmStorage {
                             return genres.size();
                         }
                     });
+        }
+    }
+
+    private void updateDirectors(Set<Director> directors, int director_id) {
+        jdbcTemplate.update("DELETE FROM FILM_DIRECTORS WHERE film_id = ?", director_id);
+        if (directors != null && !directors.isEmpty()) {
+            String sql = "INSERT INTO FILM_DIRECTORS (film_id, director_id) VALUES (?, ?)";
+            Director[] g = directors.toArray(new Director[0]);
+            jdbcTemplate.batchUpdate(
+                    sql,
+                    new BatchPreparedStatementSetter() {
+                        @Override
+                        public void setValues(PreparedStatement ps, int i) throws SQLException {
+                            ps.setInt(1, director_id);
+                            ps.setInt(2, g[i].getId());
+                        }
+
+                        public int getBatchSize() {
+                            return directors.size();
+                        }
+                    });
+        }
+    }
+
+    private void addDirectorsInFilms(List<Film> films) {
+        StringBuilder ids = new StringBuilder();
+        films.forEach(film -> {
+            if (!ids.isEmpty()) {
+                ids.append(",");
+            }
+            ids.append(film.getId().toString());
+        });
+        if (ids.isEmpty()) {
+            return;
+        }
+
+        String idStr = ids.toString();
+
+        String sqlDirectors = "SELECT fd.FILM_ID ,fd.DIRECTOR_ID,d.NAME FROM FILM_DIRECTORS fd JOIN directors d" +
+                " ON D.DIRECTOR_ID = fd.DIRECTOR_ID WHERE fd.FILM_ID IN (" + idStr + ");";
+        HashMap<Integer, Set<Director>> directorMap = new HashMap<>();
+
+        jdbcTemplate.query(sqlDirectors, rs -> {
+            Director director = new Director(rs.getInt("DIRECTOR_ID"), rs.getString("NAME"));
+            int key = rs.getInt("FILM_ID");
+            if (directorMap.containsKey(key)) {
+                directorMap.get(key).add(director);
+            } else {
+                Set<Director> directors = new HashSet<>();
+                directors.add(director);
+                directorMap.put(key, directors);
+            }
+        });
+
+        for (Film film : films) {
+            if (directorMap.containsKey(film.getId())) {
+                film.getDirectors().addAll(directorMap.get(film.getId()));
+            }
         }
     }
 }
