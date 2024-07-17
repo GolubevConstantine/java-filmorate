@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.FeedEntry;
+import ru.yandex.practicum.filmorate.model.FeedEventType;
+import ru.yandex.practicum.filmorate.model.FeedOperationType;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
@@ -18,6 +21,7 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final FeedService feedService;
 
     public Review create(Review review) {
         if (reviewStorage.isAlreadyExists(review)) {
@@ -26,16 +30,48 @@ public class ReviewService {
         throwExceptionIfFilmNotFound(review.getFilmId());
         throwExceptionIfUserNotFound(review.getUserId());
 
-        return reviewStorage.create(review);
+        Review createdReview =  reviewStorage.create(review);
+
+        FeedEntry feedEntry = FeedEntry.builder()
+                .userId(review.getUserId())
+                .eventType(FeedEventType.REVIEW)
+                .operation(FeedOperationType.ADD)
+                .entityId(createdReview.getId())
+                .build();
+
+        feedService.create(feedEntry);
+
+        return createdReview;
     }
 
     public Review update(Review review) {
         throwExceptionIfReviewNotFound(review.getId());
+
+        FeedEntry feedEntry = FeedEntry.builder()
+                .userId(review.getUserId())
+                .eventType(FeedEventType.REVIEW)
+                .operation(FeedOperationType.UPDATE)
+                .entityId(review.getId())
+                .build();
+
+        feedService.create(feedEntry);
+
         return reviewStorage.update(review);
     }
 
     public void delete(int id) {
         throwExceptionIfReviewNotFound(id);
+
+        Review review = findById(id);
+        FeedEntry feedEntry = FeedEntry.builder()
+                .userId(review.getUserId())
+                .eventType(FeedEventType.REVIEW)
+                .operation(FeedOperationType.REMOVE)
+                .entityId(review.getId())
+                .build();
+
+        feedService.create(feedEntry);
+
         reviewStorage.delete(id);
     }
 
