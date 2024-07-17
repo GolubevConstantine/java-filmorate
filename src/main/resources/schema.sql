@@ -5,6 +5,8 @@ DROP TABLE IF EXISTS mpa_rating CASCADE;
 DROP TABLE IF EXISTS films CASCADE;
 DROP TABLE IF EXISTS likes CASCADE;
 DROP TABLE IF EXISTS film_genres CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS review_actions CASCADE;
 
 create table if not exists users
 (
@@ -85,3 +87,27 @@ create table if not exists film_genres
     FOREIGN KEY (genre_id) REFERENCES genres (genre_id)
 );
 
+create table if not exists reviews
+(
+    review_id   int auto_increment PRIMARY KEY,
+    content     varchar(1000),
+    is_positive bool,
+    user_id     int,
+    film_id     int,
+    useful      int,
+    FOREIGN KEY (film_id) REFERENCES films (film_id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id)
+);
+
+create unique index if not exists reviews_user_film_idx ON reviews (user_id, film_id);
+
+create table if not exists review_actions
+(
+    review_id int,
+    user_id   int,
+    action    varchar(7),
+    PRIMARY KEY (review_id, user_id),
+    CHECK (action in ('LIKE', 'DISLIKE')),
+    FOREIGN KEY (review_id) REFERENCES reviews (review_id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id)
+);
