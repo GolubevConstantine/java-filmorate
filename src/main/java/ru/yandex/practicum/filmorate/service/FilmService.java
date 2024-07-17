@@ -3,9 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.LinkedHashSet;
@@ -20,6 +18,7 @@ public class FilmService {
     private final GenreStorage genreStorage;
     private final LikeStorage likeStorage;
     private final UserStorage userStorage;
+    private final FeedService feedService;
 
     public List<Film> findAllFilms() {
         return filmStorage.findAllFilms();
@@ -63,6 +62,15 @@ public class FilmService {
         filmStorage.findFilmById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден."));
 
         likeStorage.addLike(id, userId);
+
+        FeedEntry feedEntry = FeedEntry.builder()
+                .userId(userId)
+                .eventType(FeedEventType.LIKE)
+                .operation(FeedOperationType.ADD)
+                .entityId(id)
+                .build();
+
+        feedService.create(feedEntry);
     }
 
     public void removeLike(int id, int userId) {
@@ -70,6 +78,15 @@ public class FilmService {
         filmStorage.findFilmById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден."));
 
         likeStorage.removeLike(id, userId);
+        FeedEntry feedEntry = FeedEntry.builder()
+                .userId(userId)
+                .eventType(FeedEventType.LIKE)
+                .operation(FeedOperationType.REMOVE)
+                .entityId(id)
+                .build();
+
+        feedService.create(feedEntry);
+
     }
 
     public List<Film> findPopular(int count) {
