@@ -2,8 +2,10 @@ package ru.yandex.practicum.filmorate.dao;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -17,7 +19,16 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -114,6 +125,71 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
+    @Override
+    public List<Film> findRecommendedFilms(int userId) {
+        String sql = """
+                SELECT user_id, film_id
+                FROM likes
+                WHERE user_id IN
+                (
+                    SELECT user_id
+                    FROM likes
+                    WHERE film_id IN
+                    (
+                        SELECT film_id
+                        FROM likes
+                        WHERE user_id = ?
+                    )
+                )
+                """;
+
+        Map<Integer, LinkedHashSet<Integer>> res = jdbcTemplate.query(sql, new UserFilmExtractor(), userId);
+        if (res == null || res.get(userId) == null || res.get(userId).isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        LinkedHashSet<Integer> userLikedFilms = res.get(userId);
+        res.remove(userId);
+
+        Map<Integer, HashSet<Integer>> countToIntersections = new HashMap<>();
+        int maxCount = 0;
+        for (Set<Integer> films : res.values()) {
+
+            Set<Integer> userIntersections = new HashSet<>(userLikedFilms);
+            userIntersections.retainAll(films);
+
+            int intersectionsCount = userIntersections.size();
+            if (intersectionsCount > maxCount) {
+                maxCount = intersectionsCount;
+            }
+
+            if (!countToIntersections.containsKey(intersectionsCount)) {
+                countToIntersections.put(intersectionsCount, new HashSet<>());
+            }
+            countToIntersections.get(intersectionsCount).addAll(films);
+        }
+
+        if (maxCount == 0) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> recommendedFilmIds = countToIntersections.get(maxCount).stream()
+                .filter(filmId -> !userLikedFilms.contains(filmId))
+                .toList();
+
+        if (recommendedFilmIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return jdbcTemplate.query(
+                SELECT_FILMS + " WHERE f.film_id IN (?)",
+                (rs, rowNum) -> makeFilm(rs),
+                recommendedFilmIds.stream()
+                        .map(Object::toString)
+                        .collect(Collectors.joining(", "))
+        );
+    }
+
     private Film makeFilm(ResultSet rs) throws SQLException {
         Integer id = rs.getInt("film_id");
         return Film.builder()
@@ -202,6 +278,25 @@ public class FilmDbStorage implements FilmStorage {
             if (directorMap.containsKey(film.getId())) {
                 film.getDirectors().addAll(directorMap.get(film.getId()));
             }
+        }
+    }
+
+    private static class UserFilmExtractor implements ResultSetExtractor<Map<Integer, LinkedHashSet<Integer>>> {
+
+        @Override
+        public Map<Integer, LinkedHashSet<Integer>> extractData(ResultSet resultSet) throws SQLException, DataAccessException {
+            Map<Integer, LinkedHashSet<Integer>> userIdToFilmIds = new HashMap<>();
+            while (resultSet.next()) {
+                Integer userId = resultSet.getInt("user_id");
+                Integer filmId = resultSet.getInt("film_id");
+
+                if (!userIdToFilmIds.containsKey(userId)) {
+                    userIdToFilmIds.put(userId, new LinkedHashSet<>());
+                }
+
+                userIdToFilmIds.get(userId).add(filmId);
+            }
+            return userIdToFilmIds;
         }
     }
 }
