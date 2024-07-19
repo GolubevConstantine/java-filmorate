@@ -18,6 +18,8 @@ public interface FilmStorage {
 
     List<Film> findRecommendedFilms(int userId);
 
+    List<Film> findCommonFilms(int userId, int friendId);
+
     Optional<Film> findFilmById(int id);
 
     void deleteFilmById(int id);
