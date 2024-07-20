@@ -12,7 +12,7 @@ public interface FilmStorage {
 
     List<Film> findAllFilms();
 
-    List<Film> findPopular(int count);
+    List<Film> findPopular(Integer count, Integer genreId, Integer year);
 
     List<Film> findFilmsByDirectorID(int id, String sortedBy);
 
