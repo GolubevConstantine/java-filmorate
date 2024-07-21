@@ -242,14 +242,11 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> findCommonFilms(int userId, int friendId) {
-        String sql = SELECT_POPULAR_FILMS_WITH_ALL_FIELDS + """
-                WHERE sub.film_id IN
-                (
-                    SELECT film_id FROM likes WHERE user_id = ?
-                    INTERSECT
-                    SELECT film_id FROM likes WHERE user_id = ?
-                )
-                """;
+        String sql = SELECT_POPULAR_FILMS_WITH_ALL_FIELDS +
+                "WHERE sub.film_id IN (" +
+                "SELECT film_id FROM likes WHERE user_id = ? " +
+                "INTERSECT " +
+                "SELECT film_id FROM likes WHERE user_id = ?)";
         int limit = 100;
 
         return jdbcTemplate.query(sql, new FilmListExtractor(), limit, userId, friendId);
