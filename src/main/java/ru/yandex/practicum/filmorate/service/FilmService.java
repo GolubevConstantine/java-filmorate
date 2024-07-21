@@ -122,4 +122,11 @@ public class FilmService {
         userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден."));
         return filmStorage.findRecommendedFilms(userId);
     }
+
+    public List<Film> findCommonFilms(int userId, int friendId) {
+        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден."));
+        userStorage.findUserById(friendId).orElseThrow(() -> new UserNotFoundException("Друг среди пользователей не найден."));
+
+        return filmStorage.findCommonFilms(userId, friendId);
+    }
 }
