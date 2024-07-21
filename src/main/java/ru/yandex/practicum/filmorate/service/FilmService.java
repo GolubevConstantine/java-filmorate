@@ -2,22 +2,9 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
-import ru.yandex.practicum.filmorate.exception.MpaNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.FeedEntry;
-import ru.yandex.practicum.filmorate.model.FeedEventType;
-import ru.yandex.practicum.filmorate.model.FeedOperationType;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.LikeStorage;
-import ru.yandex.practicum.filmorate.storage.MpaStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -102,8 +89,8 @@ public class FilmService {
 
     }
 
-    public List<Film> findPopular(int count) {
-        return filmStorage.findPopular(count);
+    public List<Film> findPopular(Integer count, Integer genreId, Integer year) {
+        return filmStorage.findPopular(count, genreId, year);
     }
 
     public List<Film> findFilmsByDirectorID(int id, String sortedBy) {

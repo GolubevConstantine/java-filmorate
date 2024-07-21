@@ -19,16 +19,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -146,12 +137,32 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findPopular(int count) {
-        String sql = "LEFT JOIN likes ON f.film_id = likes.film_id " +
-                "GROUP BY f.film_id " +
-                "ORDER BY COUNT(likes.film_id) DESC " +
-                "LIMIT ?";
-        return jdbcTemplate.query(SELECT_FILMS + sql, (rs, rowNum) -> makeFilm(rs), count);
+    public List<Film> findPopular(Integer count, Integer genreId, Integer year) {
+        StringBuilder sqlQuery = new StringBuilder();
+        sqlQuery.append("SELECT f.film_id, f.name, f.description, f.releaseDate, f.duration, " +
+                "mpa.rating_id, mpa.name AS mpa_name, COUNT(l.film_id) AS likes_count " +
+                "FROM films AS f " +
+                "INNER JOIN mpa_rating AS mpa ON f.rating_id = mpa.rating_id " +
+                "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                "LEFT JOIN film_genres fg ON f.film_id = fg.film_id ");
+        if (genreId != null && year != null) {
+            sqlQuery.append(String.format("WHERE fg.genre_id = %d AND EXTRACT(YEAR FROM f.releasedate) = %d ", genreId, year));
+        } else if (genreId != null) {
+            sqlQuery.append(String.format("WHERE fg.genre_id = %d ", genreId));
+        } else if (year != null) {
+            sqlQuery.append(String.format("WHERE EXTRACT(YEAR FROM f.releasedate) = %d ", year));
+        }
+        sqlQuery.append("GROUP BY f.film_id ");
+        sqlQuery.append("ORDER BY COUNT(l.film_id) DESC ");
+        if (count != null) {
+            sqlQuery.append(String.format("LIMIT %d", count));
+        }
+        sqlQuery.append(";");
+
+        log.info("SQL запрос для получения сымых популярных фильмов: {}", sqlQuery);
+        List<Film> list = jdbcTemplate.query(sqlQuery.toString(), (rs, rowNum) -> makeFilm(rs));
+        log.info("Список самых популярных фильмов, полученный из БД: {}", list);
+        return list;
     }
 
     @Override
