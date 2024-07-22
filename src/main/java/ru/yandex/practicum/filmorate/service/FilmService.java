@@ -129,4 +129,16 @@ public class FilmService {
 
         return filmStorage.findCommonFilms(userId, friendId);
     }
+
+    public List<Film> searchFilm(String query, List<String> by) {
+        if (by.size() == 1 && by.contains("title")) {
+            return filmStorage.searchFilmsByName(query);
+        }
+        if (by.size() == 1 && by.contains("director")) {
+            return filmStorage.searchFilmsByDir(query);
+        }
+        return filmStorage.searchFilmsByDirAndName(query);
+    }
+
+
 }
