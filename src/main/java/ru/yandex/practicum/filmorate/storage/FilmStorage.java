@@ -23,4 +23,10 @@ public interface FilmStorage {
     Optional<Film> findFilmById(int id);
 
     void deleteFilmById(int id);
+
+    List<Film> searchFilmsByDirAndName(String query);
+
+    List<Film> searchFilmsByName(String query);
+
+    List<Film> searchFilmsByDir(String query);
 }

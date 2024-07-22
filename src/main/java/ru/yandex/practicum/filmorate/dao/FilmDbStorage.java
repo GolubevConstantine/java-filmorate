@@ -98,6 +98,7 @@ public class FilmDbStorage implements FilmStorage {
                     return ps;
                 }, keyHolder);
         film.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
+        updateDirectors(film.getDirectors(), film.getId());
         updateGenres(film.getGenres(), film.getId());
         return film;
     }
@@ -250,6 +251,79 @@ public class FilmDbStorage implements FilmStorage {
         int limit = 100;
 
         return jdbcTemplate.query(sql, new FilmListExtractor(), limit, userId, friendId);
+    }
+
+    @Override
+    public List<Film> searchFilmsByDirAndName(String query) {
+        String regex = "%" + query + "%";
+        String sql = SELECT_FILMS +
+                "WHERE UPPER(f.name) LIKE UPPER(?) OR f.film_id IN (" +
+                "SELECT FD.FILM_ID " +
+                "FROM FILM_DIRECTORS FD " +
+                "LEFT JOIN DIRECTORS D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
+                "WHERE UPPER(D.NAME) LIKE UPPER(?)" +
+                ") " +
+                "GROUP BY F.FILM_ID ";
+        List<Film> films = jdbcTemplate.query(sql, new Object[]{regex, regex}, (rs, rowNum) -> makeFilm(rs));
+        for (Film film : films) {
+            LinkedHashSet<Genre> genreLinkedHashSet = new LinkedHashSet<>();
+            String filmGenres = "SELECT G.* FROM film_genres AS F JOIN genres AS G ON F.genre_id = G.genre_id WHERE F.film_id = ? GROUP BY G.genre_id";
+            List<Genre> genres = jdbcTemplate.query(filmGenres, (rs, rowNum) -> makeGenre(rs), film.getId());
+            for (Genre genre : genres) {
+                genreLinkedHashSet.add(genre);
+            }
+            film.setGenres(genreLinkedHashSet);
+        }
+        addDirectorsInFilms(films);
+        return films;
+
+    }
+
+    @Override
+    public List<Film> searchFilmsByName(String query) {
+        String regex = "%" + query + "%";
+        String sql = SELECT_FILMS +
+                "WHERE UPPER(f.name) LIKE UPPER(?) " +
+                "GROUP BY F.FILM_ID ";
+        List<Film> films = jdbcTemplate.query(sql, new Object[]{regex}, (rs, rowNum) -> makeFilm(rs));
+        for (Film film : films) {
+            LinkedHashSet<Genre> genreLinkedHashSet = new LinkedHashSet<>();
+            String filmGenres = "SELECT G.* FROM film_genres AS F JOIN genres AS G ON F.genre_id = G.genre_id WHERE F.film_id = ? GROUP BY G.genre_id";
+            List<Genre> genres = jdbcTemplate.query(filmGenres, (rs, rowNum) -> makeGenre(rs), film.getId());
+            for (Genre genre : genres) {
+                genreLinkedHashSet.add(genre);
+            }
+            film.setGenres(genreLinkedHashSet);
+        }
+        addDirectorsInFilms(films);
+        log.info("FILMS " + films);
+        return films;
+    }
+
+    @Override
+    public List<Film> searchFilmsByDir(String query) {
+        String regex = "%" + query + "%";
+        String sql = SELECT_FILMS +
+                "WHERE F.FILM_ID IN (" +
+                "SELECT FD.FILM_ID " +
+                "FROM FILM_DIRECTORS FD " +
+                "LEFT JOIN DIRECTORS D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
+                "WHERE UPPER(D.NAME) LIKE UPPER(?)" +
+                ") " +
+                "GROUP BY F.FILM_ID ";
+        List<Film> films = jdbcTemplate.query(sql, new Object[]{regex}, (rs, rowNum) -> makeFilm(rs));
+        for (Film film : films) {
+            LinkedHashSet<Genre> genreLinkedHashSet = new LinkedHashSet<>();
+            String filmGenres = "SELECT G.* FROM film_genres AS F JOIN genres AS G ON F.genre_id = G.genre_id WHERE F.film_id = ? GROUP BY G.genre_id";
+            List<Genre> genres = jdbcTemplate.query(filmGenres, (rs, rowNum) -> makeGenre(rs), film.getId());
+            for (Genre genre : genres) {
+                genreLinkedHashSet.add(genre);
+            }
+            film.setGenres(genreLinkedHashSet);
+        }
+        addDirectorsInFilms(films);
+        return films;
+
     }
 
     private Film makeFilm(ResultSet rs) throws SQLException {
@@ -409,5 +483,11 @@ public class FilmDbStorage implements FilmStorage {
 
             return new ArrayList<>(idToFilm.values());
         }
+    }
+
+    private Genre makeGenre(ResultSet rs) throws SQLException {
+        int id = rs.getInt("genre_id");
+        String name = rs.getString("name");
+        return new Genre(id, name);
     }
 }
