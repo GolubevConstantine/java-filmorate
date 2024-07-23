@@ -109,8 +109,8 @@ create table if not exists review_actions
     action    varchar(7),
     PRIMARY KEY (review_id, user_id),
     CHECK (action in ('LIKE', 'DISLIKE')),
-    FOREIGN KEY (review_id) REFERENCES reviews (review_id),
-    FOREIGN KEY (user_id) REFERENCES users (user_id)
+    FOREIGN KEY (review_id) REFERENCES reviews (review_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS feed(
