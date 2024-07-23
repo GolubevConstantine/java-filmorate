@@ -27,10 +27,10 @@ public class ReviewService {
         if (reviewStorage.isAlreadyExists(review)) {
             throw new IllegalArgumentException("Отзыв к этому фильму был добавлен ранее.");
         }
-        throwExceptionIfFilmNotFound(review.getFilmId());
         throwExceptionIfUserNotFound(review.getUserId());
+        throwExceptionIfFilmNotFound(review.getFilmId());
 
-        Review createdReview =  reviewStorage.create(review);
+        Review createdReview = reviewStorage.create(review);
 
         FeedEntry feedEntry = FeedEntry.builder()
                 .userId(review.getUserId())
@@ -38,7 +38,6 @@ public class ReviewService {
                 .operation(FeedOperationType.ADD)
                 .entityId(createdReview.getId())
                 .build();
-
         feedService.create(feedEntry);
 
         return createdReview;
@@ -46,17 +45,17 @@ public class ReviewService {
 
     public Review update(Review review) {
         throwExceptionIfReviewNotFound(review.getId());
+        Review updatedReview = reviewStorage.update(review);
 
         FeedEntry feedEntry = FeedEntry.builder()
-                .userId(review.getUserId())
+                .userId(updatedReview.getUserId())
                 .eventType(FeedEventType.REVIEW)
                 .operation(FeedOperationType.UPDATE)
-                .entityId(review.getId())
+                .entityId(updatedReview.getId())
                 .build();
-
         feedService.create(feedEntry);
 
-        return reviewStorage.update(review);
+        return updatedReview;
     }
 
     public void delete(int id) {
@@ -69,7 +68,6 @@ public class ReviewService {
                 .operation(FeedOperationType.REMOVE)
                 .entityId(review.getId())
                 .build();
-
         feedService.create(feedEntry);
 
         reviewStorage.delete(id);

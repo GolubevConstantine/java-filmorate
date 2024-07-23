@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.*;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +18,7 @@ public class FilmService {
     private final LikeStorage likeStorage;
     private final UserStorage userStorage;
     private final FeedService feedService;
+    private final DirectorStorage directorStorage;
 
     public List<Film> findAllFilms() {
         return filmStorage.findAllFilms();
@@ -38,30 +38,17 @@ public class FilmService {
     }
 
     public Film update(Film film) {
-        if (filmStorage.findFilmById(film.getId()).isEmpty()) {
-            throw new FilmNotFoundException("Фильм не найден.");
-        }
+        filmStorage.findFilmById(film.getId()).orElseThrow(() -> new FilmNotFoundException("Фильм не найден."));
         return filmStorage.update(film);
     }
 
     public Film findFilmById(int id) {
-        Film film = filmStorage.findFilmById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден."));
-
-        List<Genre> genres = genreStorage.findAllGenresByFilmID(id);
-        LinkedHashSet<Genre> genresSet = new LinkedHashSet<>(genres);
-
-        genresSet.addAll(genres);
-
-        film.setGenres(genresSet);
-
-        return film;
+        return filmStorage.findFilmById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден."));
     }
 
     public void addLike(int id, int userId) {
-        userStorage.findUserById(userId).orElseThrow(() -> new FilmNotFoundException("Пользователь не найден."));
+        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден."));
         filmStorage.findFilmById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден."));
-
-        likeStorage.addLike(id, userId);
 
         FeedEntry feedEntry = FeedEntry.builder()
                 .userId(userId)
@@ -69,24 +56,22 @@ public class FilmService {
                 .operation(FeedOperationType.ADD)
                 .entityId(id)
                 .build();
-
         feedService.create(feedEntry);
+        likeStorage.addLike(id, userId);
     }
 
     public void removeLike(int id, int userId) {
-        userStorage.findUserById(userId).orElseThrow(() -> new FilmNotFoundException("Пользователь не найден."));
+        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден."));
         filmStorage.findFilmById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден."));
-
         likeStorage.removeLike(id, userId);
+
         FeedEntry feedEntry = FeedEntry.builder()
                 .userId(userId)
                 .eventType(FeedEventType.LIKE)
                 .operation(FeedOperationType.REMOVE)
                 .entityId(id)
                 .build();
-
         feedService.create(feedEntry);
-
     }
 
     public List<Film> findPopular(Integer count, Integer genreId, Integer year) {
@@ -94,6 +79,7 @@ public class FilmService {
     }
 
     public List<Film> findFilmsByDirectorID(int id, String sortedBy) {
+        directorStorage.findDirectorById(id).orElseThrow(() -> new DirectorNotFoundException("Директор не найден."));
         return filmStorage.findFilmsByDirectorID(id, sortedBy);
     }
 
@@ -139,6 +125,4 @@ public class FilmService {
         }
         return filmStorage.searchFilmsByDirAndName(query);
     }
-
-
 }

@@ -21,15 +21,13 @@ public class FilmController {
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         log.info("POST / film / {}", film.getName());
-        filmService.create(film);
-        return film;
+        return filmService.create(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.info("PUT / film / {}", film.getName());
-        filmService.update(film);
-        return film;
+        return filmService.update(film);
     }
 
     @DeleteMapping("/{id}")

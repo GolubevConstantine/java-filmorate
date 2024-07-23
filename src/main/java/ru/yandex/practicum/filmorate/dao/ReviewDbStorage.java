@@ -22,15 +22,7 @@ import java.util.Optional;
 public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    private static final String FIND_ALL_QUERY = """
-            SELECT  review_id,
-                    content,
-                    is_positive,
-                    user_id,
-                    film_id,
-                    useful
-            FROM reviews
-            """;
+    private static final String FIND_ALL_QUERY = "SELECT  review_id, content, is_positive, user_id, film_id, useful FROM reviews";
 
     @Override
     public Review create(Review review) {
@@ -52,13 +44,11 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review update(Review review) {
-        String sql = "UPDATE reviews SET content = ?, is_positive = ?, user_id = ?, film_id = ?, useful = ? WHERE review_id = ?";
+        String sql = "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?";
+
         jdbcTemplate.update(sql,
                 review.getContent(),
                 review.getIsPositive(),
-                review.getUserId(),
-                review.getFilmId(),
-                review.getUseful(),
                 review.getId()
         );
         return findById(review.getId()).orElse(null);
@@ -72,12 +62,12 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public List<Review> findAll(int limit) {
-        String sql = FIND_ALL_QUERY + " LIMIT ?";
+        String sql = FIND_ALL_QUERY + " ORDER BY useful DESC LIMIT ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), limit);
     }
 
     public List<Review> findByFilmId(int filmId, int limit) {
-        String sql = FIND_ALL_QUERY + " WHERE film_id = ? LIMIT ?";
+        String sql = FIND_ALL_QUERY + " WHERE film_id = ? ORDER BY useful DESC LIMIT ? ";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), filmId, limit);
     }
 
