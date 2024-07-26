@@ -23,17 +23,17 @@ public class DirectorService {
 
     public Director update(Director director) {
         if (directorStorage.findDirectorById(director.getId()).isEmpty()) {
-            throw new DirectorNotFoundException("Режиcсёр не найден.");
+            throw new DirectorNotFoundException(String.format("Не найден режиссер с id=%d", director.getId()));
         }
         return directorStorage.update(director);
     }
 
     public Director findDirectorById(int id) {
-        return directorStorage.findDirectorById(id).orElseThrow(() -> new DirectorNotFoundException("Режиcсёр не найден."));
+        return directorStorage.findDirectorById(id).orElseThrow(() -> new DirectorNotFoundException(String.format("Не найден режиссер с id=%d", id)));
     }
 
     public void removeDirectorById(int id) {
-        directorStorage.findDirectorById(id).orElseThrow(() -> new DirectorNotFoundException("Режиcсёр не найден."));
+        directorStorage.findDirectorById(id).orElseThrow(() -> new DirectorNotFoundException(String.format("Не найден режиссер с id=%d", id)));
         directorStorage.removeDirectorById(id);
     }
 }

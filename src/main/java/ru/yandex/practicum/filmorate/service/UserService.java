@@ -30,21 +30,21 @@ public class UserService {
 
     public User update(User user) {
         validate(user);
-        userStorage.findUserById(user.getId()).orElseThrow(() -> new UserNotFoundException("Пользователь не найден."));
+        userStorage.findUserById(user.getId()).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", user.getId())));
         return userStorage.update(user);
     }
 
     public User findUserById(int id) {
-        return userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        return userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", id)));
     }
 
-    public void addFriend(int id, int friendId) {
-        userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException("Пользователь не найден."));
-        userStorage.findUserById(friendId).orElseThrow(() -> new UserNotFoundException("Друг не найден."));
-        friendStorage.addFriend(id, friendId);
+    public void addFriend(int userId, int friendId) {
+        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
+        userStorage.findUserById(friendId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден друг с id=%d", friendId)));
+        friendStorage.addFriend(userId, friendId);
 
         FeedEntry feedEntry = FeedEntry.builder()
-                .userId(id)
+                .userId(userId)
                 .eventType(FeedEventType.FRIEND)
                 .operation(FeedOperationType.ADD)
                 .entityId(friendId)
@@ -54,7 +54,7 @@ public class UserService {
     }
 
     public List<User> findAllFriends(int id) {
-        userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException("Пользователь не найден."));
+        userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", id)));
         return friendStorage.findAllFriends(id);
     }
 
@@ -62,13 +62,13 @@ public class UserService {
         return friendStorage.findCommonFriends(id, otherId);
     }
 
-    public void removeFriend(int id, int friendId) {
-        userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException("Пользователь не найден."));
-        userStorage.findUserById(friendId).orElseThrow(() -> new UserNotFoundException("Друг не найден."));
-        friendStorage.removeFriend(id, friendId);
+    public void removeFriend(int userId, int friendId) {
+        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
+        userStorage.findUserById(friendId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", friendId)));
+        friendStorage.removeFriend(userId, friendId);
 
         FeedEntry feedEntry = FeedEntry.builder()
-                .userId(id)
+                .userId(userId)
                 .eventType(FeedEventType.FRIEND)
                 .operation(FeedOperationType.REMOVE)
                 .entityId(friendId)
@@ -84,7 +84,7 @@ public class UserService {
     }
 
     public void deleteUserById(int id) {
-        userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", id)));
         userStorage.deleteUserById(id);
     }
 }

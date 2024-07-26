@@ -22,7 +22,7 @@ public class FeedService {
     }
 
     public List<FeedEntry> getUserFeed(int userId) {
-        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
         return feedStorage.getUserFeed(userId);
     }
 }

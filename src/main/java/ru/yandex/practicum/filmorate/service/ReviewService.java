@@ -25,7 +25,7 @@ public class ReviewService {
 
     public Review create(Review review) {
         if (reviewStorage.isAlreadyExists(review)) {
-            throw new IllegalArgumentException("Отзыв к этому фильму был добавлен ранее.");
+            throw new IllegalArgumentException(String.format("Отзыв к фильму с id=%d уже был добавлен ранее.", review.getFilmId()));
         }
         throwExceptionIfUserNotFound(review.getUserId());
         throwExceptionIfFilmNotFound(review.getFilmId());
@@ -82,7 +82,7 @@ public class ReviewService {
     }
 
     public Review findById(int id) {
-        return reviewStorage.findById(id).orElseThrow(() -> new ReviewNotFoundException("Отзыв не найден."));
+        return reviewStorage.findById(id).orElseThrow(() -> new ReviewNotFoundException(String.format("Не найден отзыв с id=%d", id)));
     }
 
     public Review addLike(int id, int userId) {
@@ -119,19 +119,19 @@ public class ReviewService {
 
     private void throwExceptionIfReviewNotFound(int id) {
         if (reviewStorage.findById(id).isEmpty()) {
-            throw new ReviewNotFoundException("Отзыв не найден.");
+            throw new ReviewNotFoundException(String.format("Не найден отзыв с id=%d", id));
         }
     }
 
     private void throwExceptionIfUserNotFound(int userId) {
         if (userStorage.findUserById(userId).isEmpty()) {
-            throw new UserNotFoundException("Пользователь не найден.");
+            throw new UserNotFoundException(String.format("Не найден пользователь с id=%", userId));
         }
     }
 
     private void throwExceptionIfFilmNotFound(int userId) {
         if (filmStorage.findFilmById(userId).isEmpty()) {
-            throw new FilmNotFoundException("Фильм не найден.");
+            throw new FilmNotFoundException(String.format("Не найден фильм для пользователя с id=%d", userId));
         }
     }
 }
