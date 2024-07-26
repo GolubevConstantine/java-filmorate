@@ -43,18 +43,11 @@ public class ReviewController {
         reviewService.delete(id);
     }
 
-    @GetMapping()
-    public List<Review> findMany(@RequestParam Optional<Integer> filmId,
-                                 @RequestParam Optional<Integer> count) {
-        int limit = count.orElse(10);
-
-        if (filmId.isEmpty()) {
-            log.info("GET / reviews");
-            return reviewService.findAll(limit);
-        }
-
-        log.info("GET / reviews with filmId {}", filmId.get());
-        return reviewService.findByFilmId(filmId.get(), limit);
+    @GetMapping
+    public List<Review> findMany(@RequestParam int filmId,
+                                 @RequestParam(required = false, defaultValue = "10") int count) {
+        log.info("GET / reviews with filmId {}", filmId);
+        return reviewService.findByFilmId(filmId, count);
     }
 
     @GetMapping("/{id}")

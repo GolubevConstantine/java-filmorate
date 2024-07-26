@@ -125,7 +125,7 @@ public class ReviewService {
 
     private void throwExceptionIfUserNotFound(int userId) {
         if (userStorage.findUserById(userId).isEmpty()) {
-            throw new UserNotFoundException(String.format("Не найден пользователь с id=%", userId));
+            throw new UserNotFoundException(String.format("Не найден пользователь с id=%d", userId));
         }
     }
 
