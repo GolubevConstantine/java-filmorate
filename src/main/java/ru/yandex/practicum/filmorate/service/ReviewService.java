@@ -2,9 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ReviewNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.FeedEntry;
 import ru.yandex.practicum.filmorate.model.FeedEventType;
 import ru.yandex.practicum.filmorate.model.FeedOperationType;
@@ -27,8 +25,8 @@ public class ReviewService {
         if (reviewStorage.isAlreadyExists(review)) {
             throw new IllegalArgumentException(String.format("Отзыв к фильму с id=%d уже был добавлен ранее.", review.getFilmId()));
         }
-        throwExceptionIfUserNotFound(review.getUserId());
-        throwExceptionIfFilmNotFound(review.getFilmId());
+        checkUserExists(review.getUserId());
+        checkFilmExists(review.getFilmId());
 
         Review createdReview = reviewStorage.create(review);
 
@@ -44,7 +42,7 @@ public class ReviewService {
     }
 
     public Review update(Review review) {
-        throwExceptionIfReviewNotFound(review.getId());
+        checkReviewExists(review.getId());
         Review updatedReview = reviewStorage.update(review);
 
         FeedEntry feedEntry = FeedEntry.builder()
@@ -59,7 +57,7 @@ public class ReviewService {
     }
 
     public void delete(int id) {
-        throwExceptionIfReviewNotFound(id);
+        checkReviewExists(id);
 
         Review review = findById(id);
         FeedEntry feedEntry = FeedEntry.builder()
@@ -82,56 +80,56 @@ public class ReviewService {
     }
 
     public Review findById(int id) {
-        return reviewStorage.findById(id).orElseThrow(() -> new ReviewNotFoundException(String.format("Не найден отзыв с id=%d", id)));
+        return reviewStorage.findById(id).orElseThrow(() -> new DataNotFoundException(String.format("Не найден отзыв с id=%d", id)));
     }
 
     public Review addLike(int id, int userId) {
-        throwExceptionIfReviewNotFound(id);
-        throwExceptionIfUserNotFound(userId);
+        checkReviewExists(id);
+        checkUserExists(userId);
 
         reviewStorage.addLike(id, userId);
         return findById(id);
     }
 
     public Review addDislike(int id, int userId) {
-        throwExceptionIfReviewNotFound(id);
-        throwExceptionIfUserNotFound(userId);
+        checkReviewExists(id);
+        checkUserExists(userId);
 
         reviewStorage.addDislike(id, userId);
         return findById(id);
     }
 
     public Review deleteLike(int id, int userId) {
-        throwExceptionIfReviewNotFound(id);
-        throwExceptionIfUserNotFound(userId);
+        checkReviewExists(id);
+        checkUserExists(userId);
 
         reviewStorage.deleteLike(id, userId);
         return findById(id);
     }
 
     public Review deleteDislike(int id, int userId) {
-        throwExceptionIfReviewNotFound(id);
-        throwExceptionIfUserNotFound(userId);
+        checkReviewExists(id);
+        checkUserExists(userId);
 
         reviewStorage.deleteDislike(id, userId);
         return findById(id);
     }
 
-    private void throwExceptionIfReviewNotFound(int id) {
+    private void checkReviewExists(int id) {
         if (reviewStorage.findById(id).isEmpty()) {
-            throw new ReviewNotFoundException(String.format("Не найден отзыв с id=%d", id));
+            throw new DataNotFoundException(String.format("Не найден отзыв с id=%d", id));
         }
     }
 
-    private void throwExceptionIfUserNotFound(int userId) {
+    private void checkUserExists(int userId) {
         if (userStorage.findUserById(userId).isEmpty()) {
-            throw new UserNotFoundException(String.format("Не найден пользователь с id=%d", userId));
+            throw new DataNotFoundException(String.format("Не найден пользователь с id=%d", userId));
         }
     }
 
-    private void throwExceptionIfFilmNotFound(int userId) {
+    private void checkFilmExists(int userId) {
         if (filmStorage.findFilmById(userId).isEmpty()) {
-            throw new FilmNotFoundException(String.format("Не найден фильм для пользователя с id=%d", userId));
+            throw new DataNotFoundException(String.format("Не найден фильм для пользователя с id=%d", userId));
         }
     }
 }

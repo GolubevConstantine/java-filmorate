@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.FeedEntry;
 import ru.yandex.practicum.filmorate.model.FeedEventType;
 import ru.yandex.practicum.filmorate.model.FeedOperationType;
@@ -30,17 +30,17 @@ public class UserService {
 
     public User update(User user) {
         validate(user);
-        userStorage.findUserById(user.getId()).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", user.getId())));
+        userStorage.findUserById(user.getId()).orElseThrow(() -> new DataNotFoundException(String.format("Не найден пользователь с id=%d", user.getId())));
         return userStorage.update(user);
     }
 
     public User findUserById(int id) {
-        return userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", id)));
+        return userStorage.findUserById(id).orElseThrow(() -> new DataNotFoundException(String.format("Не найден пользователь с id=%d", id)));
     }
 
     public void addFriend(int userId, int friendId) {
-        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
-        userStorage.findUserById(friendId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден друг с id=%d", friendId)));
+        userStorage.findUserById(userId).orElseThrow(() -> new DataNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
+        userStorage.findUserById(friendId).orElseThrow(() -> new DataNotFoundException(String.format("Не найден друг с id=%d", friendId)));
         friendStorage.addFriend(userId, friendId);
 
         FeedEntry feedEntry = FeedEntry.builder()
@@ -54,7 +54,7 @@ public class UserService {
     }
 
     public List<User> findAllFriends(int id) {
-        userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", id)));
+        userStorage.findUserById(id).orElseThrow(() -> new DataNotFoundException(String.format("Не найден пользователь с id=%d", id)));
         return friendStorage.findAllFriends(id);
     }
 
@@ -63,8 +63,8 @@ public class UserService {
     }
 
     public void removeFriend(int userId, int friendId) {
-        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
-        userStorage.findUserById(friendId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", friendId)));
+        userStorage.findUserById(userId).orElseThrow(() -> new DataNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
+        userStorage.findUserById(friendId).orElseThrow(() -> new DataNotFoundException(String.format("Не найден пользователь с id=%d", friendId)));
         friendStorage.removeFriend(userId, friendId);
 
         FeedEntry feedEntry = FeedEntry.builder()
@@ -84,7 +84,7 @@ public class UserService {
     }
 
     public void deleteUserById(int id) {
-        userStorage.findUserById(id).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", id)));
+        userStorage.findUserById(id).orElseThrow(() -> new DataNotFoundException(String.format("Не найден пользователь с id=%d", id)));
         userStorage.deleteUserById(id);
     }
 }

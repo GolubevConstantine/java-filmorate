@@ -16,7 +16,6 @@ import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -44,8 +43,13 @@ public class ReviewController {
     }
 
     @GetMapping
-    public List<Review> findMany(@RequestParam int filmId,
+    public List<Review> findMany(@RequestParam(required = false, defaultValue = "0") int filmId,
                                  @RequestParam(required = false, defaultValue = "10") int count) {
+        if (filmId < 1) {
+            log.info("GET / reviews");
+            return reviewService.findAll(count);
+        }
+
         log.info("GET / reviews with filmId {}", filmId);
         return reviewService.findByFilmId(filmId, count);
     }

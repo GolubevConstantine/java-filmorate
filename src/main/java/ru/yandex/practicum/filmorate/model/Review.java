@@ -12,19 +12,14 @@ import lombok.Data;
 public class Review {
     @JsonProperty("reviewId")
     private int id;
-
     @NotBlank(message = "Cодержание отзыва не может быть пустым.")
     @Size(max = 1000, message = "Слишком длинное содержание.")
     private String content;
-
     @NotNull
     private Boolean isPositive;
-
     @NotNull
     private Integer userId;
-
     @NotNull
     private Integer filmId;
-
     private Integer useful;
 }

@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-@Slf4j
 @RequiredArgsConstructor
 @Repository
 public class UserDbStorage implements UserStorage {
@@ -25,7 +23,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User create(User user) {
-        String sql = "insert into users (email, login, name, birthday) values (?, ?, ?, ?)";
+        String sql = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(
                 connection -> {
@@ -49,25 +47,19 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> findAll() {
-        String sql = "select user_id, login, name, email, birthday from users";
+        String sql = "SELECT user_id, login, name, email, birthday FROM users";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs));
     }
 
     @Override
     public Optional<User> findUserById(int id) {
-        String sql = "select * from users where user_id = ?";
+        String sql = "SELECT * FROM users WHERE user_id = ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs), id).stream().findFirst();
     }
 
     @Override
     public void deleteUserById(int id) {
-        String sqlFriendship = "DELETE FROM FRIENDSHIP WHERE USER_ID = ?  ";
-        jdbcTemplate.update(sqlFriendship, id);
-        String sqlFriend = "DELETE FROM FRIENDSHIP WHERE FRIEND_ID = ?  ";
-        jdbcTemplate.update(sqlFriend, id);
-        String sqlLike = "DELETE FROM LIKES WHERE USER_ID = ?";
-        jdbcTemplate.update(sqlLike, id);
-        String sql = "DELETE FROM USERS WHERE USER_ID = ?";
+        String sql = "DELETE FROM users WHERE user_id = ?";
         jdbcTemplate.update(sql, id);
     }
 

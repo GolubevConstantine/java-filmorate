@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
+import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.*;
 
@@ -23,17 +23,17 @@ public class DirectorService {
 
     public Director update(Director director) {
         if (directorStorage.findDirectorById(director.getId()).isEmpty()) {
-            throw new DirectorNotFoundException(String.format("Не найден режиссер с id=%d", director.getId()));
+            throw new DataNotFoundException(String.format("Не найден режиссер с id=%d", director.getId()));
         }
         return directorStorage.update(director);
     }
 
     public Director findDirectorById(int id) {
-        return directorStorage.findDirectorById(id).orElseThrow(() -> new DirectorNotFoundException(String.format("Не найден режиссер с id=%d", id)));
+        return directorStorage.findDirectorById(id).orElseThrow(() -> new DataNotFoundException(String.format("Не найден режиссер с id=%d", id)));
     }
 
     public void removeDirectorById(int id) {
-        directorStorage.findDirectorById(id).orElseThrow(() -> new DirectorNotFoundException(String.format("Не найден режиссер с id=%d", id)));
+        directorStorage.findDirectorById(id).orElseThrow(() -> new DataNotFoundException(String.format("Не найден режиссер с id=%d", id)));
         directorStorage.removeDirectorById(id);
     }
 }

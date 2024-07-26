@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.FeedEntry;
 import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -22,7 +22,7 @@ public class FeedService {
     }
 
     public List<FeedEntry> getUserFeed(int userId) {
-        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
+        userStorage.findUserById(userId).orElseThrow(() -> new DataNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
         return feedStorage.getUserFeed(userId);
     }
 }

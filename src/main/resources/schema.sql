@@ -30,8 +30,8 @@ create table if not exists friendship
     user_id   int,
     friend_id int,
     accepted  boolean,
-    FOREIGN KEY (user_id) REFERENCES users (user_id),
-    FOREIGN KEY (friend_id) REFERENCES users (user_id)
+    FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
 
 create table if not exists mpa_rating
@@ -99,8 +99,8 @@ create table if not exists reviews
     user_id     int,
     film_id     int,
     useful      int,
-    FOREIGN KEY (film_id) REFERENCES films (film_id),
-    FOREIGN KEY (user_id) REFERENCES users (user_id)
+    FOREIGN KEY (film_id) REFERENCES films (film_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
 
 create unique index if not exists reviews_user_film_idx ON reviews (user_id, film_id);

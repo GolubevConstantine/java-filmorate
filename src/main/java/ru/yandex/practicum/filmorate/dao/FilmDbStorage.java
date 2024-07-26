@@ -151,6 +151,14 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, new FilmListExtractor(), id);
     }
 
+    /**
+     * Пересечения по лайкам для фильмов выбранного пользователя
+     * с лайками остальных пользователей содежатся в HashMap,
+     * где ключ - количесво пересечений id фильмов каждого пользователя,
+     * значение - Set из id общих фильмов.
+     * При наличии ключа фильмы дополняются новыми.
+     * Список id рекомендуемых фильмов соответствует максимальному значению ключа.
+     */
     @Override
     public List<Film> findRecommendedFilms(int userId) {
         String sql = "SELECT user_id, film_id FROM likes WHERE user_id IN (" +

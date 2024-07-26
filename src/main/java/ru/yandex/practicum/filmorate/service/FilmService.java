@@ -38,17 +38,17 @@ public class FilmService {
     }
 
     public Film update(Film film) {
-        filmStorage.findFilmById(film.getId()).orElseThrow(() -> new FilmNotFoundException(String.format("Не найден фильм с id=%d", film.getId())));
+        filmStorage.findFilmById(film.getId()).orElseThrow(() -> new DataNotFoundException(String.format("Не найден фильм с id=%d", film.getId())));
         return filmStorage.update(film);
     }
 
     public Film findFilmById(int id) {
-        return filmStorage.findFilmById(id).orElseThrow(() -> new FilmNotFoundException(String.format("Не найден фильм с id=%d", id)));
+        return filmStorage.findFilmById(id).orElseThrow(() -> new DataNotFoundException(String.format("Не найден фильм с id=%d", id)));
     }
 
     public void addLike(int filmId, int userId) {
-        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
-        filmStorage.findFilmById(filmId).orElseThrow(() -> new FilmNotFoundException(String.format("Не найден фильм с id=%d", filmId)));
+        userStorage.findUserById(userId).orElseThrow(() -> new DataNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
+        filmStorage.findFilmById(filmId).orElseThrow(() -> new DataNotFoundException(String.format("Не найден фильм с id=%d", filmId)));
 
         FeedEntry feedEntry = FeedEntry.builder()
                 .userId(userId)
@@ -61,8 +61,8 @@ public class FilmService {
     }
 
     public void removeLike(int filmId, int userId) {
-        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
-        filmStorage.findFilmById(filmId).orElseThrow(() -> new FilmNotFoundException(String.format("Не найден фильм с id=%d", filmId)));
+        userStorage.findUserById(userId).orElseThrow(() -> new DataNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
+        filmStorage.findFilmById(filmId).orElseThrow(() -> new DataNotFoundException(String.format("Не найден фильм с id=%d", filmId)));
         likeStorage.removeLike(filmId, userId);
 
         FeedEntry feedEntry = FeedEntry.builder()
@@ -79,7 +79,7 @@ public class FilmService {
     }
 
     public List<Film> findFilmsByDirectorID(int id, String sortedBy) {
-        directorStorage.findDirectorById(id).orElseThrow(() -> new DirectorNotFoundException(String.format("Не найден директор с id=%d", id)));
+        directorStorage.findDirectorById(id).orElseThrow(() -> new DataNotFoundException(String.format("Не найден директор с id=%d", id)));
         return filmStorage.findFilmsByDirectorID(id, sortedBy);
     }
 
@@ -88,7 +88,7 @@ public class FilmService {
     }
 
     public Mpa findMpaById(int id) {
-        return mpaStorage.findMpaById(id).orElseThrow(() -> new MpaNotFoundException(String.format("Не найден рейтинг MPA с id=%d", id)));
+        return mpaStorage.findMpaById(id).orElseThrow(() -> new DataNotFoundException(String.format("Не найден рейтинг MPA с id=%d", id)));
     }
 
     public List<Genre> findAllGenres() {
@@ -96,22 +96,22 @@ public class FilmService {
     }
 
     public Genre findGenreById(int id) {
-        return genreStorage.findGenreById(id).orElseThrow(() -> new GenreNotFoundException(String.format("Не найден жанр с id=%d", id)));
+        return genreStorage.findGenreById(id).orElseThrow(() -> new DataNotFoundException(String.format("Не найден жанр с id=%d", id)));
     }
 
     public void deleteFilmById(int id) {
-        filmStorage.findFilmById(id).orElseThrow(() -> new FilmNotFoundException(String.format("Не найден фильм с id=%d", id)));
+        filmStorage.findFilmById(id).orElseThrow(() -> new DataNotFoundException(String.format("Не найден фильм с id=%d", id)));
         filmStorage.deleteFilmById(id);
     }
 
     public List<Film> findRecommendedFilms(int userId) {
-        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
+        userStorage.findUserById(userId).orElseThrow(() -> new DataNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
         return filmStorage.findRecommendedFilms(userId);
     }
 
     public List<Film> findCommonFilms(int userId, int friendId) {
-        userStorage.findUserById(userId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
-        userStorage.findUserById(friendId).orElseThrow(() -> new UserNotFoundException(String.format("Не найден друг с id=%d", friendId)));
+        userStorage.findUserById(userId).orElseThrow(() -> new DataNotFoundException(String.format("Не найден пользователь с id=%d", userId)));
+        userStorage.findUserById(friendId).orElseThrow(() -> new DataNotFoundException(String.format("Не найден друг с id=%d", friendId)));
 
         return filmStorage.findCommonFilms(userId, friendId);
     }
