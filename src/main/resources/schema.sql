@@ -72,8 +72,8 @@ create table if not exists likes
     film_id int,
     user_id int,
     PRIMARY KEY (user_id, film_id),
-    FOREIGN KEY (film_id) REFERENCES films (film_id),
-    FOREIGN KEY (user_id) REFERENCES users (user_id)
+    FOREIGN KEY (film_id) REFERENCES films (film_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
 
 create table if not exists genres
@@ -87,8 +87,8 @@ create table if not exists film_genres
     id       int auto_increment,
     film_id  int,
     genre_id int,
-    FOREIGN KEY (film_id) REFERENCES films (film_id),
-    FOREIGN KEY (genre_id) REFERENCES genres (genre_id)
+    FOREIGN KEY (film_id) REFERENCES films (film_id) ON DELETE CASCADE,
+    FOREIGN KEY (genre_id) REFERENCES genres (genre_id) ON DELETE CASCADE
 );
 
 create table if not exists reviews
